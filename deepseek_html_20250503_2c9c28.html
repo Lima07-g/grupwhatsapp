@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gestão Financeira em Meticais</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --color-primary: #2b6cb0;
+            --color-success: #38a169;
+            --color-danger: #e53e3e;
+            --color-warning: #dd6b20;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 10px; 
+            max-width: 100%; 
+            overflow-x: hidden; 
+            color: #2d3748;
+        }
+        .card { 
+            background: white; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            border: 1px solid #e2e8f0;
+        }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 8px 0 16px; 
+            box-sizing: border-box; 
+            border: 1px solid #cbd5e0; 
+            border-radius: 6px; 
+            font-size: 16px;
+        }
+        button { 
+            background: var(--color-primary); 
+            color: white; 
+            padding: 12px; 
+            border: none; 
+            width: 100%; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #2c5282; }
+        button.secondary { 
+            background: var(--color-danger); 
+            margin-top: 8px; 
+        }
+        button.secondary:hover { background: #c53030; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            font-size: 0.9em; 
+        }
+        th, td { 
+            padding: 12px 10px; 
+            text-align: left; 
+            border-bottom: 1px solid #e2e8f0; 
+        }
+        th { 
+            background-color: #f7fafc; 
+            font-weight: 600; 
+            color: #4a5568;
+        }
+        .tab { 
+            overflow: hidden; 
+            border: 1px solid #e2e8f0; 
+            background-color: #f7fafc; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+        }
+        .tab button { 
+            background-color: inherit; 
+            float: left; 
+            border: none; 
+            outline: none; 
+            cursor: pointer; 
+            padding: 12px 20px; 
+            transition: 0.3s; 
+            color: #4a5568; 
+            width: auto; 
+            border-radius: 0; 
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .tab button:hover { 
+            background-color: #ebf4ff; 
+            color: var(--color-primary);
+        }
+        .tab button.active { 
+            background-color: var(--color-primary); 
+            color: white; 
+        }
+        .tabcontent { 
+            display: none; 
+            animation: fadeEffect 0.3s; 
+        }
+        @keyframes fadeEffect { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+        }
+        .positive { color: var(--color-success); font-weight: 600; }
+        .negative { color: var(--color-danger); font-weight: 600; }
+        .warning { color: var(--color-warning); }
+        .info-text { 
+            font-size: 0.85em; 
+            color: #718096; 
+            margin: -12px 0 12px; 
+        }
+        .flex-row { 
+            display: flex; 
+            gap: 15px; 
+            margin-bottom: 15px;
+        }
+        .flex-row > div { flex: 1; }
+        .chart-container { 
+            position: relative; 
+            height: 250px; 
+            margin: 25px 0; 
+        }
+        .badge { 
+            display: inline-block; 
+            padding: 3px 8px; 
+            border-radius: 12px; 
+            font-size: 0.75em; 
+            font-weight: 600; 
+            margin-top: 4px;
+        }
+        .badge-primary { background: #ebf4ff; color: var(--color-primary); }
+        .badge-success { background: #f0fff4; color: var(--color-success); }
+        .badge-danger { background: #fff5f5; color: var(--color-danger); }
+        .badge-warning { background: #fffaf0; color: var(--color-warning); }
+        .currency::before { content: 'MZN '; }
+        .text-sm { font-size: 0.85em; }
+        .text-muted { color: #718096; }
+        .mt-2 { margin-top: 8px; }
+        .mb-3 { margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+
+<h1>📊 Gestão Financeira em Meticais</h1>
+
+<div class="tab">
+    <button class="tablinks active" onclick="openTab(event, 'Vendas')">Vendas</button>
+    <button class="tablinks" onclick="openTab(event, 'Produtos')">Produtos</button>
+    <button class="tablinks" onclick="openTab(event, 'Relatorios')">Relatórios</button>
+    <button class="tablinks" onclick="openTab(event, 'Clientes')">Clientes</button>
+</div>
+
+<!-- Aba Vendas -->
+<div id="Vendas" class="tabcontent" style="display: block;">
+    <div class="card">
+        <h2>➕ Nova Venda</h2>
+        <div class="flex-row">
+            <div>
+                <label for="dataVenda">Data da Venda</label>
+                <input type="date" id="dataVenda">
+            </div>
+            <div>
+                <label for="clienteVenda">Cliente</label>
+                <select id="clienteVenda">
+                    <option value="">Selecione ou cadastre novo</option>
+                </select>
+            </div>
+        </div>
+        
+        <label for="produtoVenda">Produto</label>
+        <select id="produtoVenda"></select>
+        
+        <div class="flex-row">
+            <div>
+                <label for="quantidadeVenda">Quantidade</label>
+                <input type="number" id="quantidadeVenda" min="1" value="1">
+            </div>
+            <div>
+                <label for="precoUnitario">Preço Unitário</label>
+                <input type="number" id="precoUnitario" step="1" readonly>
+            </div>
+        </div>
+        
+        <div class="flex-row">
+            <div>
+                <label for="custoUnitario">Custo Unitário</label>
+                <input type="number" id="custoUnitario" step="1" readonly>
+            </div>
+            <div>
+                <label for="lucroUnitario">Lucro Unitário</label>
+                <input type="number" id="lucroUnitario" step="1" readonly class="positive">
+            </div>
+        </div>
+        
+        <button onclick="adicionarItemVenda()">Adicionar Item</button>
+        
+        <h3 style="margin-top: 25px;">Itens da Venda</h3>
+        <table id="itensVenda">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Qtd</th>
+                    <th>Preço</th>
+                    <th>Total</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2"><strong>Total da Venda</strong></td>
+                    <td colspan="3" id="totalVenda" class="currency">0,00</td>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>Lucro Total</strong></td>
+                    <td colspan="3" id="lucroTotalVenda" class="positive currency">0,00</td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <button onclick="finalizarVenda()" style="margin-top: 20px;">Finalizar Venda</button>
+    </div>
+</div>
+
+<!-- Aba Produtos -->
+<div id="Produtos" class="tabcontent">
+    <div class="card">
+        <h2>➕ Cadastrar Produto</h2>
+        <label for="nomeProduto">Nome do Produto</label>
+        <input type="text" id="nomeProduto" placeholder="Ex: Arroz 5kg">
+        
+        <label for="descricaoProduto">Descrição</label>
+        <textarea id="descricaoProduto" rows="2" placeholder="Detalhes sobre o produto"></textarea>
+        
+        <div class="flex-row">
+            <div>
+                <label for="custoProduto">Custo de Compra (MZN)</label>
+                <input type="number" id="custoProduto" step="1" min="0" placeholder="0">
+            </div>
+            <div>
+                <label for="precoProduto">Preço de Venda (MZN)</label>
+                <input type="number" id="precoProduto" step="1" min="0" placeholder="0">
+            </div>
+        </div>
+        
+        <div class="flex-row">
+            <div>
+                <label for="estoqueProduto">Estoque Inicial</label>
+                <input type="number" id="estoqueProduto" min="0" value="0">
+            </div>
+            <div>
+                <label for="categoriaProduto">Categoria</label>
+                <select id="categoriaProduto">
+                    <option value="Alimentos">Alimentos</option>
+                    <option value="Bebidas">Bebidas</option>
+                    <option value="Limpeza">Limpeza</option>
+                    <option value="Electrodomésticos">Electrodomésticos</option>
+                    <option value="Outros">Outros</option>
+                </select>
+            </div>
+        </div>
+        
+        <button onclick="cadastrarProduto()">Cadastrar Produto</button>
+    </div>
+    
+    <div class="card">
+        <h2>📦 Lista de Produtos</h2>
+        <table id="listaProdutos">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Custo</th>
+                    <th>Preço</th>
+                    <th>Lucro</th>
+                    <th>Estoque</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Aba Relatórios -->
+<div id="Relatorios" class="tabcontent">
+    <div class="card">
+        <h2>📈 Resumo Financeiro</h2>
+        
+        <div class="flex-row">
+            <div class="card" style="flex: 1;">
+                <h3>Hoje</h3>
+                <p>Vendas: <span id="vendasHoje" class="currency">0,00</span></p>
+                <p>Lucro: <span id="lucroHoje" class="positive currency">0,00</span></p>
+            </div>
+            <div class="card" style="flex: 1;">
+                <h3>Esta Semana</h3>
+                <p>Vendas: <span id="vendasSemana" class="currency">0,00</span></p>
+                <p>Lucro: <span id="lucroSemana" class="positive currency">0,00</span></p>
+            </div>
+            <div class="card" style="flex: 1;">
+                <h3>Este Mês</h3>
+                <p>Vendas: <span id="vendasMes" class="currency">0,00</span></p>
+                <p>Lucro: <span id="lucroMes" class="positive currency">0,00</span></p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Lucro Mensal (MZN)</h3>
+            <div class="chart-container">
+                <canvas id="graficoLucroMensal"></canvas>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Top Produtos (Lucro em MZN)</h3>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="graficoTopProdutos"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Aba Clientes -->
+<div id="Clientes" class="tabcontent">
+    <div class="card">
+        <h2>👥 Cadastrar Cliente</h2>
+        <div class="flex-row">
+            <div>
+                <label for="nomeCliente">Nome Completo</label>
+                <input type="text" id="nomeCliente" placeholder="Ex: João António">
+            </div>
+            <div>
+                <label for="telefoneCliente">Telefone</label>
+                <input type="tel" id="telefoneCliente" placeholder="84 123 4567">
+            </div>
+        </div>
+        
+        <label for="emailCliente">E-mail</label>
+        <input type="email" id="emailCliente" placeholder="exemplo@email.com">
+        
+        <label for="enderecoCliente">Endereço</label>
+        <textarea id="enderecoCliente" rows="2" placeholder="Av. 25 de Setembro, nº 123"></textarea>
+        
+        <button onclick="cadastrarCliente()">Salvar Cliente</button>
+    </div>
+    
+    <div class="card">
+        <h2>Lista de Clientes</h2>
+        <table id="listaClientes">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Total Compras</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Formatação de moeda em Meticais
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('pt-MZ', {
+            style: 'decimal',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(value);
+    };
+
+    // Adiciona formatação de moeda aos elementos com classe 'currency'
+    document.querySelectorAll('.currency').forEach(el => {
+        if (!el.textContent.includes('MZN')) {
+            const value = parseFloat(el.textContent.replace(',', '.')) || 0;
+            el.textContent = formatCurrency(value);
+        }
+    });
+
+    // Dados da aplicação
+    let produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+    let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+    let vendas = JSON.parse(localStorage.getItem('vendas')) || [];
+    let carrinho = [];
+    
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configura data atual como padrão
+        const today = new Date();
+        document.getElementById('dataVenda').valueAsDate = today;
+        
+        // Carrega dados iniciais
+        carregarProdutosParaVenda();
+        carregarClientes();
+        atualizarListaProdutos();
+        atualizarListaClientes();
+        
+        // Configura evento para atualizar preços quando selecionar produto
+        document.getElementById('produtoVenda').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.dataset.preco) {
+                document.getElementById('precoUnitario').value = selectedOption.dataset.preco;
+                document.getElementById('custoUnitario').value = selectedOption.dataset.custo;
+                document.getElementById('lucroUnitario').value = (selectedOption.dataset.preco - selectedOption.dataset.custo).toFixed(2);
+            }
+        });
+    });
+    
+    // Controles de Tab
+    function openTab(evt, tabName) {
+        const tabcontent = document.getElementsByClassName("tabcontent");
+        for (let i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        
+        const tablinks = document.getElementsByClassName("tablinks");
+        for (let i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+        
+        // Atualiza os gráficos quando muda para a aba de relatórios
+        if (tabName === 'Relatorios') {
+            setTimeout(() => {
+                gerarRelatorios();
+            }, 100);
+        }
+    }
+    
+    // Produtos
+    function carregarProdutosParaVenda() {
+        const select = document.getElementById('produtoVenda');
+        select.innerHTML = '';
+        
+        if (produtos.length === 0) {
+            const option = document.createElement('option');
+            option.textContent = 'Nenhum produto cadastrado';
+            option.disabled = true;
+            select.appendChild(option);
+            return;
+        }
+        
+        produtos.forEach(produto => {
+            const option = document.createElement('option');
+            option.value = produto.id;
+            option.textContent = `${produto.nome} (Estoque: ${produto.estoque}) - MZN ${formatCurrency(produto.preco)}`;
+            option.dataset.custo = produto.custo;
+            option.dataset.preco = produto.preco;
+            select.appendChild(option);
+        });
+    }
+    
+    function cadastrarProduto() {
+        const nome = document.getElementById('nomeProduto').value.trim();
+        const descricao = document.getElementById('descricaoProduto').value.trim();
+        const custo = parseFloat(document.getElementById('custoProduto').value);
+        const preco = parseFloat(document.getElementById('precoProduto').value);
+        const estoque = parseInt(document.getElementById('estoqueProduto').value);
+        const categoria = document.getElementById('categoriaProduto').value;
+        
+        // Validações
+        if (!nome) {
+            alert('Por favor, informe o nome do produto');
+            return;
+        }
+        
+        if (isNaN(custo) || custo < 0) {
+            alert('Custo inválido');
+            return;
+        }
+        
+        if (isNaN(preco) || preco < custo) {
+            alert('Preço de venda deve ser maior ou igual ao custo');
+            return;
+        }
+        
+        if (isNaN(estoque) || estoque < 0) {
+            alert('Estoque inválido');
+            return;
+        }
+        
+        const novoProduto = {
+            id: Date.now().toString(),
+            nome: nome,
+            descricao: descricao,
+            custo: custo,
+            preco: preco,
+            estoque: estoque,
+            categoria: categoria,
+            dataCadastro: new Date().toISOString()
+        };
+        
+        produtos.push(novoProduto);
+        localStorage.setItem('produtos', JSON.stringify(produtos));
+        
+        // Limpa o formulário
+        document.getElementById('nomeProduto').value = '';
+        document.getElementById('descricaoProduto').value = '';
+        document.getElementById('custoProduto').value = '';
+        document.getElementById('precoProduto').value = '';
+        document.getElementById('estoqueProduto').value = '0';
+        
+        // Atualiza as listas
+        carregarProdutosParaVenda();
+        atualizarListaProdutos();
+        
+        alert('Produto cadastrado com sucesso!');
+    }
+    
+    function atualizarListaProdutos() {
+        const tbody = document.getElementById('listaProdutos').querySelector('tbody');
+        tbody.innerHTML = '';
+        
+        if (produtos.length === 0) {
+            const row = tbody.insertRow();
+            const cell = row.insertCell(0);
+            cell.colSpan = 5;
+            cell.textContent = 'Nenhum produto cadastrado';
+            cell.style.textAlign = 'center';
+            return;
+        }
+        
+        produtos.forEach(produto => {
+            const row = tbody.insertRow();
+            
+            // Nome e descrição
+            const cellNome = row.insertCell(0);
+            cellNome.innerHTML = `<strong>${produto.nome}</strong>
+                                <div class="text-sm text-muted">${produto.descricao || 'Sem descrição'}</div>
+                                <span class="badge ${
+                                    produto.categoria === 'Alimentos' ? 'badge-success' : 
+                                    produto.categoria === 'Bebidas' ? 'badge-primary' :
+                                    produto.categoria === 'Electrodomésticos' ? 'badge-warning' : 'badge-danger'
+                                }">${produto.categoria}</span>`;
+            
+            // Custo
+            row.insertCell(1).textContent = `MZN ${formatCurrency(produto.custo)}`;
+            
+            // Preço
+            row.insertCell(2).textContent = `MZN ${formatCurrency(produto.preco)}`;
+            
+            // Lucro
+            const lucro = produto.preco - produto.custo;
+            const cellLucro = row.insertCell(3);
+            cellLucro.innerHTML = `<span class="positive">MZN ${formatCurrency(lucro)}</span>
+                                  <div class="text-sm text-muted">${((lucro / produto.custo) * 100).toFixed(0)}%</div>`;
+            
+            // Estoque
+            const cellEstoque = row.insertCell(4);
+            cellEstoque.textContent = produto.estoque;
+            if (produto.estoque < 3) {
+                cellEstoque.className = 'negative';
+            } else if (produto.estoque < 6) {
+                cellEstoque.className = 'warning';
+            }
+        });
+    }
+    
+    // Clientes
+    function carregarClientes() {
+        const select = document.getElementById('clienteVenda');
+        select.innerHTML = '<option value="">Selecione ou cadastre novo</option>';
+        
+        clientes.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = cliente.id;
+            option.textContent = `${cliente.nome} (${cliente.telefone || 'sem telefone'})`;
+            select.appendChild(option);
+        });
+    }
+    
+    function cadastrarCliente() {
+        const nome = document.getElementById('nomeCliente').value.trim();
+        const telefone = document.getElementById('telefoneCliente').value.trim();
+        const email = document.getElementById('emailCliente').value.trim();
+        const endereco = document.getElementById('enderecoCliente').value.trim();
+        
+        if (!nome) {
+            alert('Por favor, informe o nome do cliente');
+            return;
+        }
+        
+        const novoCliente = {
+            id: Date.now().toString(),
+            nome: nome,
+            telefone: telefone,
+            email: email,
+            endereco: endereco,
+            dataCadastro: new Date().toISOString(),
+            totalCompras: 0
+        };
+        
+        clientes.push(novoCliente);
+        localStorage.setItem('clientes', JSON.stringify(clientes));
+        
+        // Limpa o formulário
+        document.getElementById('nomeCliente').value = '';
+        document.getElementById('telefoneCliente').value = '';
+        document.getElementById('emailCliente').value = '';
+        document.getElementById('enderecoCliente').value = '';
+        
+        // Atualiza as listas
+        carregarClientes();
+        atualizarListaClientes();
+        
+        alert('Cliente cadastrado com sucesso!');
+    }
+    
+    function atualizarListaClientes() {
+        const tbody = document.getElementById('listaClientes').querySelector('tbody');
+        tbody.innerHTML = '';
+        
+        if (clientes.length === 0) {
+            const row = tbody.insertRow();
+            const cell = row.insertCell(0);
+            cell.colSpan = 3;
+            cell.textContent = 'Nenhum cliente cadastrado';
+            cell.style.textAlign = 'center';
+            return;
+        }
+        
+        clientes.forEach(cliente => {
+            const row = tbody.insertRow();
+            
+            // Nome e contato
+            const cellNome = row.insertCell(0);
+            cellNome.innerHTML = `<strong>${cliente.nome}</strong>
+                                 <div class="text-sm text-muted">${cliente.email || 'sem e-mail'}</div>`;
+            
+            // Telefone
+            row.insertCell(1).textContent = cliente.telefone || '-';
+            
+            // Total de compras
+            row.insertCell(2).textContent = `MZN ${formatCurrency(cliente.totalCompras)}`;
+        });
+    }
+    
+    // Vendas
+    function adicionarItemVenda() {
+        const produtoId = document.getElementById('produtoVenda').value;
+        const quantidade = parseInt(document.getElementById('quantidadeVenda').value);
+        
+        if (!produtoId || isNaN(quantidade) || quantidade <= 0) {
+            alert('Por favor, selecione um produto e informe a quantidade');
+            return;
+        }
+        
+        const produto = produtos.find(p => p.id === produtoId);
+        if (!produto) {
+            alert('Produto não encontrado');
+            return;
+        }
+        
+        if (quantidade > produto.estoque) {
+            alert(`Quantidade indisponível em estoque. Disponível: ${produto.estoque}`);
+            return;
+        }
+        
+        const precoUnitario = parseFloat(document.getElementById('precoUnitario').value);
+        const custoUnitario = parseFloat(document.getElementById('custoUnitario').value);
+        const lucroUnitario = parseFloat(document.getElementById('lucroUnitario').value);
+        
+        const item = {
+            produtoId: produto.id,
+            produtoNome: produto.nome,
+            quantidade: quantidade,
+            precoUnitario: precoUnitario,
+            custoUnitario: custoUnitario,
+            lucroUnitario: lucroUnitario
+        };
+        
+        carrinho.push(item);
+        atualizarCarrinho();
+        
+        // Limpa a seleção
+        document.getElementById('quantidadeVenda').value = '1';
+    }
+    
+    function atualizarCarrinho() {
+        const tbody = document.getElementById('itensVenda').querySelector('tbody');
+        tbody.innerHTML = '';
+        
+        let totalVenda = 0;
+        let totalLucro = 0;
+        
+        carrinho.forEach((item, index) => {
+            const row = tbody.insertRow();
+            
+            // Produto
+            row.insertCell(0).textContent = item.produtoNome;
+            
+            // Quantidade
+            row.insertCell(1).textContent = item.quantidade;
+            
+            // Preço Unitário
+            row.insertCell(2).textContent = `MZN ${formatCurrency(item.precoUnitario)}`;
+            
+            // Total
+            const totalItem = item.quantidade * item.precoUnitario;
+            row.insertCell(3).textContent = `MZN ${formatCurrency(totalItem)}`;
+            
+            // Ação
+            const cellAcao = row.insertCell(4);
+            const btnRemover = document.createElement('button');
+            btnRemover.textContent = 'Remover';
+            btnRemover.className = 'secondary';
+            btnRemover.style.width = 'auto';
+            btnRemover.style.padding = '5px 10px';
+            btnRemover.onclick = () => removerItemVenda(index);
+            cellAcao.appendChild(btnRemover);
+            
+            totalVenda += totalItem;
+            totalLucro += item.quantidade * item.lucroUnitario;
+        });
+        
+        document.getElementById('totalVenda').textContent = `MZN ${formatCurrency(totalVenda)}`;
+        document.getElementById('lucroTotalVenda').textContent = `MZN ${formatCurrency(totalLucro)}`;
+    }
+    
+    function removerItemVenda(index) {
+        carrinho.splice(index, 1);
+        atualizarCarrinho();
+    }
+    
+    function finalizarVenda() {
+        if (carrinho.length === 0) {
+            alert('Adicione itens ao carrinho antes de finalizar a venda');
+            return;
+        }
+        
+        const clienteId = document.getElementById('clienteVenda').value;
+        const clienteNome = clienteId ? 
+            clientes.find(c => c.id === clienteId)?.nome : 'Cliente não identificado';
+        
+        const dataVenda = document.getElementById('dataVenda').value || new Date().toISOString().split('T')[0];
+        
+        // Calcula totais
+        const totalVenda = carrinho.reduce((sum, item) => sum + (item.quantidade * item.precoUnitario), 0);
+        const totalLucro = carrinho.reduce((sum, item) => sum + (item.quantidade * item.lucroUnitario), 0);
+        
+        // Cria objeto de venda
+        const venda = {
+            id: Date.now().toString(),
+            data: dataVenda,
+            clienteId: clienteId,
+            clienteNome: clienteNome,
+            itens: [...carrinho],
+            total: totalVenda,
+            lucro: totalLucro
+        };
+        
+        // Atualiza estoque
+        carrinho.forEach(item => {
+            const produto = produtos.find(p => p.id === item.produtoId);
+            if (produto) {
+                produto.estoque -= item.quantidade;
+            }
+        });
+        
+        // Atualiza total de compras do cliente
+        if (clienteId) {
+            const cliente = clientes.find(c => c.id === clienteId);
+            if (cliente) {
+                cliente.totalCompras += totalVenda;
+            }
+        }
+        
+        // Salva tudo
+        vendas.push(venda);
+        localStorage.setItem('vendas', JSON.stringify(vendas));
+        localStorage.setItem('produtos', JSON.stringify(produtos));
+        localStorage.setItem('clientes', JSON.stringify(clientes));
+        
+        // Limpa o carrinho
+        carrinho = [];
+        atualizarCarrinho();
+        
+        // Atualiza listas
+        carregarProdutosParaVenda();
+        atualizarListaProdutos();
+        atualizarListaClientes();
+        
+        alert(`Venda finalizada com sucesso!\nTotal: MZN ${formatCurrency(totalVenda)}\nLucro: MZN ${formatCurrency(totalLucro)}`);
+    }
+    
+    // Relatórios
+    function gerarRelatorios() {
+        const hoje = new Date().toISOString().split('T')[0];
+        const hojeObj = new Date();
+        const primeiroDiaMes = new Date(hojeObj.getFullYear(), hojeObj.getMonth(), 1).toISOString().split('T')[0];
+        
+        // Filtra vendas
+        const vendasHoje = vendas.filter(v => v.data === hoje);
+        const vendasSemana = vendas.filter(v => {
+            const dataVenda = new Date(v.data);
+            const diffTime = hojeObj - dataVenda;
+            const diffDays = diffTime / (1000 * 60 * 60 * 24);
+            return diffDays <= 7;
+        });
+        const vendasMes = vendas.filter(v => v.data >= primeiroDiaMes && v.data <= hoje);
+        
+        // Calcula totais
+        const totalHoje = vendasHoje.reduce((sum, v) => sum + v.total, 0);
+        const lucroHoje = vendasHoje.reduce((sum, v) => sum + v.lucro, 0);
+        
+        const totalSemana = vendasSemana.reduce((sum, v) => sum + v.total, 0);
+        const lucroSemana = vendasSemana.reduce((sum, v) => sum + v.lucro, 0);
+        
+        const totalMes = vendasMes.reduce((sum, v) => sum + v.total, 0);
+        const lucroMes = vendasMes.reduce((sum, v) => sum + v.lucro, 0);
+        
+        // Atualiza os cards
+        document.getElementById('vendasHoje').textContent = formatCurrency(totalHoje);
+        document.getElementById('lucroHoje').textContent = formatCurrency(lucroHoje);
+        document.getElementById('lucroHoje').className = lucroHoje >= 0 ? 'positive' : 'negative';
+        
+        document.getElementById('vendasSemana').textContent = formatCurrency(totalSemana);
+        document.getElementById('lucroSemana').textContent = formatCurrency(lucroSemana);
+        document.getElementById('lucroSemana').className = lucroSemana >= 0 ? 'positive' : 'negative';
+        
+        document.getElementById('vendasMes').textContent = formatCurrency(totalMes);
+        document.getElementById('lucroMes').textContent = formatCurrency(lucroMes);
+        document.getElementById('lucroMes').className = lucroMes >= 0 ? 'positive' : 'negative';
+        
+        // Gráfico de lucro mensal
+        renderGraficoLucroMensal();
+        
+        // Gráfico de top produtos
+        renderGraficoTopProdutos();
+    }
+    
+    function renderGraficoLucroMensal() {
+        const ctx = document.getElementById('graficoLucroMensal').getContext('2d');
+        
+        // Agrupa vendas por dia no mês atual
+        const hoje = new Date();
+        const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+        
+        const diasNoMes = ultimoDiaMes.getDate();
+        const labels = Array.from({length: diasNoMes}, (_, i) => `${i + 1}/${hoje.getMonth() + 1}`);
+        
+        const dadosLucro = Array(diasNoMes).fill(0);
+        const dadosVendas = Array(diasNoMes).fill(0);
+        
+        vendas.forEach(venda => {
+            const dataVenda = new Date(venda.data);
+            if (dataVenda >= primeiroDiaMes && dataVenda <= ultimoDiaMes) {
+                const dia = dataVenda.getDate() - 1;
+                dadosLucro[dia] += venda.lucro;
+                dadosVendas[dia] += venda.total;
+            }
+        });
+        
+        // Destrói o gráfico anterior se existir
+        if (window.graficoLucroMensal) {
+            window.graficoLucroMensal.destroy();
+        }
+        
+        window.graficoLucroMensal = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Lucro Diário (MZN)',
+                        data: dadosLucro,
+                        borderColor: '#38a169',
+                        backgroundColor: 'rgba(56, 161, 105, 0.1)',
+                        tension: 0.3,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Vendas Diárias (MZN)',
+                        data: dadosVendas,
+                        borderColor: '#2b6cb0',
+                        backgroundColor: 'rgba(43, 108, 176, 0.1)',
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: MZN ${formatCurrency(context.raw)}`;
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Lucro (MZN)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Vendas (MZN)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function renderGraficoTopProdutos() {
+        const ctx = document.getElementById('graficoTopProdutos').getContext('2d');
+        
+        // Calcula lucro por produto
+        const lucroPorProduto = {};
+        
+        vendas.forEach(venda => {
+            venda.itens.forEach(item => {
+                if (!lucroPorProduto[item.produtoNome]) {
+                    lucroPorProduto[item.produtoNome] = 0;
+                }
+                lucroPorProduto[item.produtoNome] += item.quantidade * item.lucroUnitario;
+            });
+        });
+        
+        // Ordena e pega os top 10
+        const produtosOrdenados = Object.entries(lucroPorProduto)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10);
+        
+        const labels = produtosOrdenados.map(item => item[0]);
+        const dados = produtosOrdenados.map(item => item[1]);
+        
+        // Destrói o gráfico anterior se existir
+        if (window.graficoTopProdutos) {
+            window.graficoTopProdutos.destroy();
+        }
+        
+        window.graficoTopProdutos = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Lucro Total (MZN)',
+                    data: dados,
+                    backgroundColor: '#38a169',
+                    borderColor: '#2f855a',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Lucro: MZN ${formatCurrency(context.raw)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Produtos'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Lucro (MZN)'
+                        }
+                    }
+                },
+                indexAxis: 'y', // Faz o gráfico horizontal
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
